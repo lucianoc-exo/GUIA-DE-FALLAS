@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUIA DE FALLAS</title>
-    <!-- LIBRERÍA DE PROCESAMIENTO CSV ROBUSTO -->
+    <!-- LIBRERÍA DE PROCESAMIENTO CSV -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
         :root {
@@ -35,35 +35,13 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
         h1 {
             font-size: 2.2rem;
             font-weight: 700;
             color: #0f172a;
-            margin-bottom: 15px;
-        }
-
-        .search-container {
-            max-width: 400px;
-            margin: 0 auto 35px auto;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 20px;
-            border-radius: 25px;
-            border: 1px solid #cbd5e1;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .search-input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
 
         .section-title {
@@ -123,7 +101,7 @@
             color: #ffffff;
         }
 
-        /* --- VENTANA MODAL EMERGENTE --- */
+        /* --- VENTANA MODAL CON TABLA ENTERA --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -143,9 +121,9 @@
             background: var(--card-bg);
             padding: 25px 30px;
             border-radius: 16px;
-            max-width: 650px;
-            width: 90%;
-            max-height: 85vh;
+            max-width: 950px;
+            width: 95%;
+            max-height: 88vh;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -175,75 +153,58 @@
         }
 
         .modal-header-title {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #0f172a;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-right: 35px;
-        }
-
-        .modal-search-container {
-            margin-bottom: 15px;
-        }
-
-        .modal-search-input {
-            width: 100%;
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 0.9rem;
-            outline: none;
-            background-color: #f8fafc;
-            transition: all 0.2s ease;
-        }
-
-        .modal-search-input:focus {
-            border-color: var(--accent-color);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         .modal-body-scroll {
             overflow-y: auto;
-            padding-right: 4px;
+            overflow-x: auto;
             flex-grow: 1;
-        }
-
-        .falla-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid var(--accent-color);
-            padding: 14px 16px;
             border-radius: 8px;
-            margin-bottom: 12px;
-            text-align: left;
+            border: 1px solid #e2e8f0;
         }
 
-        .falla-card:last-child {
-            margin-bottom: 0;
-        }
-
-        .falla-nombre {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-        }
-
-        .falla-descripcion {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            font-style: italic;
-        }
-
-        .falla-solucion {
-            color: #334155;
+        /* ESTILOS DE LA TABLA ENTERA DE INFORMACIÓN */
+        .tabla-fallas {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.88rem;
-            line-height: 1.4;
-            white-space: pre-line;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 8px;
+            text-align: left;
+            background: #ffffff;
         }
+
+        .tabla-fallas th {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 12px 14px;
+            font-weight: 700;
+            border-bottom: 2px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .tabla-fallas td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+
+        .tabla-fallas tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .tabla-fallas tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .col-codigo { font-weight: 600; color: var(--accent-color); white-space: nowrap; }
+        .col-falla { font-weight: 600; color: #0f172a; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.98); }
@@ -255,9 +216,6 @@
 
     <header>
         <h1>GUIA DE FALLAS</h1>
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar equipo..." onkeyup="filterCards()">
-        </div>
     </header>
 
     <!-- SECCIÓN: PRINCIPAL -->
@@ -284,37 +242,37 @@
     <!-- SECCIÓN: DESKTOP -->
     <h2 class="section-title">DESKTOP</h2>
     <div class="grid">
-        <div class="card" onclick="abrirModalFallas('READY D4')">
+        <div class="card" onclick="abrirModalTablaCompleta('READY D4')">
             <strong>READY D4</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('READY D6')">
+        <div class="card" onclick="abrirModalTablaCompleta('READY D6')">
             <strong>READY D6</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('READY D1')">
+        <div class="card" onclick="abrirModalTablaCompleta('READY D1')">
             <strong>READY D1</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('CLEVER A2')">
+        <div class="card" onclick="abrirModalTablaCompleta('CLEVER A2')">
             <strong>CLEVER A2</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('CLEVER A4')">
+        <div class="card" onclick="abrirModalTablaCompleta('CLEVER A4')">
             <strong>CLEVER A4</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('READY C2')">
+        <div class="card" onclick="abrirModalTablaCompleta('READY C2')">
             <strong>READY C2</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('INDUSTRIAL X56')">
+        <div class="card" onclick="abrirModalTablaCompleta('INDUSTRIAL X56')">
             <strong>INDUSTRIAL X56</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
-        <div class="card" onclick="abrirModalFallas('INDUSTRIAL X58')">
+        <div class="card" onclick="abrirModalTablaCompleta('INDUSTRIAL X58')">
             <strong>INDUSTRIAL X58</strong>
-            <span>Ver soluciones</span>
+            <span>Ver tabla completa</span>
         </div>
     </div>
 
@@ -322,14 +280,10 @@
     <div id="modalFallas" class="modal-overlay" onclick="cerrarModalAfuera(event)">
         <div class="modal-content">
             <button class="close-btn" onclick="cerrarModal()">✕</button>
-            <h2 id="modalModeloTitle" class="modal-header-title">Código</h2>
-            
-            <div class="modal-search-container">
-                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="⚡ Filtrar fallas o soluciones de este equipo..." onkeyup="filtrarFallasModal()">
-            </div>
+            <h2 id="modalModeloTitle" class="modal-header-title">Información de la Plantilla</h2>
 
             <div id="modalBody" class="modal-body-scroll">
-                <p style="color: var(--text-muted);">Cargando datos...</p>
+                <p style="padding: 20px; color: var(--text-muted);">Cargando datos...</p>
             </div>
         </div>
     </div>
@@ -338,16 +292,14 @@
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTS_HknNb3veufJLM74PHMJf2gkL0CRq9CE0hmhxMfTgwUH87k2N6osqJ2eb_hlHYcnvdh8G9ornBN4/pub?gid=0&single=true&output=csv';
 
         let datosPlanilla = [];
-        let fallasActualesModal = [];
 
-        // Descarga y procesamiento confiable con PapaParse
+        // Cargar planilla de Google Sheets
         function cargarDatosSheets() {
             Papa.parse(SHEET_CSV_URL, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    // Normalizar nombres de columnas eliminando espacios y convirtiendo a mayúsculas
                     datosPlanilla = results.data.map(row => {
                         const newRow = {};
                         Object.keys(row).forEach(key => {
@@ -356,7 +308,6 @@
                         });
                         return newRow;
                     });
-                    console.log("Planilla cargada con éxito. Registros:", datosPlanilla.length);
                 },
                 error: function(err) {
                     console.error("Error al procesar la planilla de Google Sheets:", err);
@@ -364,51 +315,58 @@
             });
         }
 
-        function abrirModalFallas(codigo) {
-            document.getElementById('modalModeloTitle').innerText = 'Código: ' + codigo;
-            document.getElementById('modalSearchInput').value = '';
-            
-            // Buscar coincidencias exactas o parciales del código
-            fallasActualesModal = datosPlanilla.filter(
-                item => item.CODIGO && item.CODIGO.toLowerCase() === codigo.toLowerCase()
-            );
-
-            renderizarFallasModal(fallasActualesModal);
-            document.getElementById('modalFallas').style.display = 'flex';
-        }
-
-        function renderizarFallasModal(listaFallas) {
+        // Mostrar la tabla entera de información dentro del modal
+        function abrirModalTablaCompleta(codigoFiltro) {
+            document.getElementById('modalModeloTitle').innerText = 'Tabla de Información: ' + codigoFiltro;
             const modalBody = document.getElementById('modalBody');
 
             if (datosPlanilla.length === 0) {
-                modalBody.innerHTML = '<p style="color:#ef4444;">No se pudieron obtener los datos. Si ejecutas el archivo localmente, te recomendamos abrirlo con un servidor local (ej. Live Server de VS Code) para evitar restricciones de navegador.</p>';
+                modalBody.innerHTML = '<p style="padding: 20px; color:#ef4444;">No se pudieron obtener los datos de la planilla.</p>';
                 return;
             }
 
-            if (listaFallas.length === 0) {
-                modalBody.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No se encontraron fallas registradas para este código.</p>';
+            // Filtrar registros por el código seleccionado
+            const registrosFiltrados = datosPlanilla.filter(
+                item => item.CODIGO && item.CODIGO.toLowerCase() === codigoFiltro.toLowerCase()
+            );
+
+            if (registrosFiltrados.length === 0) {
+                modalBody.innerHTML = '<p style="padding: 20px; color: var(--text-muted);">No hay registros disponibles para este código.</p>';
             } else {
-                modalBody.innerHTML = listaFallas.map(f => `
-                    <div class="falla-card">
-                        <div class="falla-nombre">⚠️ ${f.FALLA || 'Falla no especificada'}</div>
-                        ${f.DESCRIPCIÓN || f.DESCRIPCION ? `<div class="falla-descripcion"><strong>Descripción:</strong> ${f.DESCRIPCIÓN || f.DESCRIPCION}</div>` : ''}
-                        <div class="falla-solucion"><strong>Solución:</strong> ${f.SOLUCIÓN || f.SOLUCION || 'Sin solución cargada.'}</div>
-                    </div>
-                `).join('');
+                // Construcción del cuadro entero (Tabla)
+                let tablaHTML = `
+                    <table class="tabla-fallas">
+                        <thead>
+                            <tr>
+                                <th>CÓDIGO</th>
+                                <th>FALLA</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th>SOLUCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                registrosFiltrados.forEach(row => {
+                    tablaHTML += `
+                        <tr>
+                            <td class="col-codigo">${row.CODIGO || '-'}</td>
+                            <td class="col-falla">${row.FALLA || '-'}</td>
+                            <td>${row.DESCRIPCIÓN || row.DESCRIPCION || '-'}</td>
+                            <td>${row.SOLUCIÓN || row.SOLUCION || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                tablaHTML += `
+                        </tbody>
+                    </table>
+                `;
+
+                modalBody.innerHTML = tablaHTML;
             }
-        }
 
-        function filtrarFallasModal() {
-            const query = document.getElementById('modalSearchInput').value.toLowerCase();
-            
-            const filtradas = fallasActualesModal.filter(item => {
-                const falla = (item.FALLA || '').toLowerCase();
-                const desc = (item.DESCRIPCIÓN || item.DESCRIPCION || '').toLowerCase();
-                const sol = (item.SOLUCIÓN || item.SOLUCION || '').toLowerCase();
-                return falla.includes(query) || desc.includes(query) || sol.includes(query);
-            });
-
-            renderizarFallasModal(filtradas);
+            document.getElementById('modalFallas').style.display = 'flex';
         }
 
         function cerrarModal() {
@@ -419,16 +377,6 @@
             if (event.target.classList.contains('modal-overlay')) {
                 cerrarModal();
             }
-        }
-
-        function filterCards() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.card');
-
-            cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(query) ? 'flex' : 'none';
-            });
         }
 
         window.onload = cargarDatosSheets;
