@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUIA DE FALLAS</title>
+    <!-- LIBRERÍA DE PROCESAMIENTO CSV ROBUSTO -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 10px 15px -3px rgba(37, 99, 235, 0.15), 0 4px 6px -4px rgba(37, 99, 235, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 15px;
+        }
+
+        .search-container {
+            max-width: 400px;
+            margin: 0 auto 35px auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 30px 0 15px 0;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 18px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card strong {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .card span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card:hover strong,
+        .card:hover span {
+            color: #ffffff;
+        }
+
+        /* --- VENTANA MODAL EMERGENTE --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px 30px;
+            border-radius: 16px;
+            max-width: 650px;
+            width: 90%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .modal-header-title {
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin-bottom: 15px;
+            padding-right: 35px;
+        }
+
+        .modal-search-container {
+            margin-bottom: 15px;
+        }
+
+        .modal-search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            outline: none;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        .modal-search-input:focus {
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .modal-body-scroll {
+            overflow-y: auto;
+            padding-right: 4px;
+            flex-grow: 1;
+        }
+
+        .falla-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--accent-color);
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .falla-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .falla-nombre {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .falla-descripcion {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .falla-solucion {
+            color: #334155;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            white-space: pre-line;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GUIA DE FALLAS</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Buscar equipo..." onkeyup="filterCards()">
+        </div>
+    </header>
+
+    <!-- SECCIÓN: PRINCIPAL -->
+    <h2 class="section-title">SOPORTE EXO</h2>
+    <div class="grid">
+        <a class="card" href="https://soporte.exo.com.ar/support/home" target="_blank">
+            <strong>SOPORTE TECNICO EXO</strong>
+            <span>Indicar en primer contacto</span>
+        </a>
+        <a class="card" href="https://st.intranet.exo.com.ar/#!main/ordserv2" target="_blank">
+            <strong>Órdenes de Servicio</strong>
+            <span>Base ST</span>
+        </a>
+        <a class="card" href="https://soporte.exo.com.ar/a/dashboard/default" target="_blank">
+            <strong>Tickets</strong>
+            <span>Mesa de Ayuda</span>
+        </a>
+        <a class="card" href="https://exocore.intranet.exo.com.ar/clientes/v2" target="_blank">
+            <strong>EXO Core</strong>
+            <span>Gestión Clientes</span>
+        </a>
+    </div>
+
+    <!-- SECCIÓN: DESKTOP -->
+    <h2 class="section-title">DESKTOP</h2>
+    <div class="grid">
+        <div class="card" onclick="abrirModalFallas('READY D4')">
+            <strong>READY D4</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('READY D6')">
+            <strong>READY D6</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('READY D1')">
+            <strong>READY D1</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('CLEVER A2')">
+            <strong>CLEVER A2</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('CLEVER A4')">
+            <strong>CLEVER A4</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('READY C2')">
+            <strong>READY C2</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('INDUSTRIAL X56')">
+            <strong>INDUSTRIAL X56</strong>
+            <span>Ver soluciones</span>
+        </div>
+        <div class="card" onclick="abrirModalFallas('INDUSTRIAL X58')">
+            <strong>INDUSTRIAL X58</strong>
+            <span>Ver soluciones</span>
+        </div>
+    </div>
+
+    <!-- VENTANA MODAL EMERGENTE -->
+    <div id="modalFallas" class="modal-overlay" onclick="cerrarModalAfuera(event)">
+        <div class="modal-content">
+            <button class="close-btn" onclick="cerrarModal()">✕</button>
+            <h2 id="modalModeloTitle" class="modal-header-title">Código</h2>
+            
+            <div class="modal-search-container">
+                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="⚡ Filtrar fallas o soluciones de este equipo..." onkeyup="filtrarFallasModal()">
+            </div>
+
+            <div id="modalBody" class="modal-body-scroll">
+                <p style="color: var(--text-muted);">Cargando datos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTS_HknNb3veufJLM74PHMJf2gkL0CRq9CE0hmhxMfTgwUH87k2N6osqJ2eb_hlHYcnvdh8G9ornBN4/pub?gid=0&single=true&output=csv';
+
+        let datosPlanilla = [];
+        let fallasActualesModal = [];
+
+        // Descarga y procesamiento confiable con PapaParse
+        function cargarDatosSheets() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    // Normalizar nombres de columnas eliminando espacios y convirtiendo a mayúsculas
+                    datosPlanilla = results.data.map(row => {
+                        const newRow = {};
+                        Object.keys(row).forEach(key => {
+                            const cleanKey = key.trim().toUpperCase();
+                            newRow[cleanKey] = row[key] ? row[key].trim() : '';
+                        });
+                        return newRow;
+                    });
+                    console.log("Planilla cargada con éxito. Registros:", datosPlanilla.length);
+                },
+                error: function(err) {
+                    console.error("Error al procesar la planilla de Google Sheets:", err);
+                }
+            });
+        }
+
+        function abrirModalFallas(codigo) {
+            document.getElementById('modalModeloTitle').innerText = 'Código: ' + codigo;
+            document.getElementById('modalSearchInput').value = '';
+            
+            // Buscar coincidencias exactas o parciales del código
+            fallasActualesModal = datosPlanilla.filter(
+                item => item.CODIGO && item.CODIGO.toLowerCase() === codigo.toLowerCase()
+            );
+
+            renderizarFallasModal(fallasActualesModal);
+            document.getElementById('modalFallas').style.display = 'flex';
+        }
+
+        function renderizarFallasModal(listaFallas) {
+            const modalBody = document.getElementById('modalBody');
+
+            if (datosPlanilla.length === 0) {
+                modalBody.innerHTML = '<p style="color:#ef4444;">No se pudieron obtener los datos. Si ejecutas el archivo localmente, te recomendamos abrirlo con un servidor local (ej. Live Server de VS Code) para evitar restricciones de navegador.</p>';
+                return;
+            }
+
+            if (listaFallas.length === 0) {
+                modalBody.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No se encontraron fallas registradas para este código.</p>';
+            } else {
+                modalBody.innerHTML = listaFallas.map(f => `
+                    <div class="falla-card">
+                        <div class="falla-nombre">⚠️ ${f.FALLA || 'Falla no especificada'}</div>
+                        ${f.DESCRIPCIÓN || f.DESCRIPCION ? `<div class="falla-descripcion"><strong>Descripción:</strong> ${f.DESCRIPCIÓN || f.DESCRIPCION}</div>` : ''}
+                        <div class="falla-solucion"><strong>Solución:</strong> ${f.SOLUCIÓN || f.SOLUCION || 'Sin solución cargada.'}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filtrarFallasModal() {
+            const query = document.getElementById('modalSearchInput').value.toLowerCase();
+            
+            const filtradas = fallasActualesModal.filter(item => {
+                const falla = (item.FALLA || '').toLowerCase();
+                const desc = (item.DESCRIPCIÓN || item.DESCRIPCION || '').toLowerCase();
+                const sol = (item.SOLUCIÓN || item.SOLUCION || '').toLowerCase();
+                return falla.includes(query) || desc.includes(query) || sol.includes(query);
+            });
+
+            renderizarFallasModal(filtradas);
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalFallas').style.display = 'none';
+        }
+
+        function cerrarModalAfuera(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                cerrarModal();
+            }
+        }
+
+        function filterCards() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        window.onload = cargarDatosSheets;
+    </script>
+</body>
+</html>
